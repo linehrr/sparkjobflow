@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class Controller {
   private val modules: mutable.Set[IModule] = mutable.HashSet()
 
-  private def runProcessHandler(in: Any, module: IModule): Any = {
+  private def runProcessHandler(in: Seq[Any], module: IModule): Any = {
     try {
       module.process(in)
     }catch{

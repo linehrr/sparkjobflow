@@ -5,7 +5,7 @@ trait IModule {
 
   def depend: Option[Seq[String]]
 
-  def process(in: Any): Any
+  def process(in: Seq[Any]): Any
 
   def on_failure(e: Throwable, in: Any): Any = {
     // default failure handling
