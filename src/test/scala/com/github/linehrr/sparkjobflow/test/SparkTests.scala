@@ -9,13 +9,12 @@ object SparkTests extends App {
 
 
   val controller = new Controller
-  controller.register(SparkModule1)
+  controller
+      .register(SparkModule1)
       .register(SparkModule2)
       .register(SparkModule3)
 
   controller.start()
-
-//  Thread.sleep(20000)
 }
 
 object SparkModule1 extends IModule {
