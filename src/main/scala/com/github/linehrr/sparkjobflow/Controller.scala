@@ -1,5 +1,7 @@
 package com.github.linehrr.sparkjobflow
 
+import com.github.linehrr.sparkjobflow.annotation.moduleDeprecated
+
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, Promise}
@@ -98,7 +100,12 @@ class Controller {
   }
 
   final def register[T <: IModule](module: T): Controller = {
-    modules.add(module)
+    if(module.getClass.isAnnotationPresent(classOf[moduleDeprecated])){
+      val annotation = module.getClass.getAnnotation(classOf[moduleDeprecated])
+      println(s"Skip loading module ${module.moduleName} due to ${annotation.reason()}")
+    }else{
+      modules.add(module)
+    }
 
     this
   }
