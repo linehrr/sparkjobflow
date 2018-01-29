@@ -1,6 +1,6 @@
 package com.github.linehrr.sparkjobflow
 
-import com.github.linehrr.sparkjobflow.annotation.moduleDeprecated
+import com.github.linehrr.sparkjobflow.annotation.{failFast, moduleDeprecated}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -18,6 +18,7 @@ class Controller {
     }catch{
       case e: Exception =>
         module.on_failure(e, in)
+        module.failfast()
     }
   }
 

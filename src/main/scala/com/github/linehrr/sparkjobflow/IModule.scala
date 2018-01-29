@@ -1,5 +1,7 @@
 package com.github.linehrr.sparkjobflow
 
+import com.github.linehrr.sparkjobflow.annotation.failFast
+
 trait IModule {
   private[this] val logger = org.log4s.getLogger
 
@@ -11,7 +13,14 @@ trait IModule {
 
   def on_failure(e: Throwable, in: Any): Any = {
     // default failure handling
-    logger.error(e)("Failed module")
+    logger.error(e)(s"Failed module $moduleName")
+
     null
+  }
+
+  final def failfast(): Unit = {
+    if(getClass.isAnnotationPresent(classOf[failFast])){
+      sys.exit(getClass.getAnnotation(classOf[failFast]).exitCode())
+    }
   }
 }

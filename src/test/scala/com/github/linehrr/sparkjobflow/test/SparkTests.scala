@@ -1,5 +1,6 @@
 package com.github.linehrr.sparkjobflow.test
 
+import com.github.linehrr.sparkjobflow.annotation.failFast
 import com.github.linehrr.sparkjobflow.{Controller, IModule}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -37,12 +38,11 @@ object SparkModule1 extends IModule {
       )
     )
 
-    inputData.collect().foreach(println)
-
     inputData
   }
 }
 
+@failFast(exitCode = 9)
 object SparkModule2 extends IModule {
   override def moduleName = "M2"
 
@@ -51,17 +51,17 @@ object SparkModule2 extends IModule {
   override def process(in: Seq[Any]) = {
     in.head.asInstanceOf[RDD[String]].foreach(println)
     in.head.asInstanceOf[RDD[String]].map( r => r + "M2" )
+    throw new Exception
   }
 }
 
 object SparkModule3 extends IModule {
   override def moduleName = "M3"
 
-  override def depend = Option(Seq("M2"))
+  override def depend = Option(Seq("M2", "M1"))
 
   override def process(in: Seq[Any]) = {
     in.head.asInstanceOf[RDD[String]].foreach(println)
-
-    throw new Exception
+    in(1).asInstanceOf[RDD[String]].map( _ + "M3").collect().foreach(println)
   }
 }
