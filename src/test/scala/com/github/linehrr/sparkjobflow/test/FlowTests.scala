@@ -1,5 +1,6 @@
 package com.github.linehrr.sparkjobflow.test
 
+import com.github.linehrr.sparkjobflow.annotation.moduleDeprecated
 import com.github.linehrr.sparkjobflow.{Controller, IModule}
 
 object FlowTests extends App {
@@ -11,6 +12,7 @@ object FlowTests extends App {
     .register(Module2)
     .register(Module3)
     .register(Module4)
+    .register(Module5)
 
   controller.start()
 
@@ -59,4 +61,13 @@ object Module4 extends IModule {
     println(in.head.asInstanceOf[String])
     println(in(1).asInstanceOf[Int])
   }
+}
+
+@moduleDeprecated(reason = "test deprecation")
+object Module5 extends IModule {
+  override def moduleName = "M5"
+
+  override def depend = None
+
+  override def process(in: Seq[Any]) = {}
 }
