@@ -8,6 +8,8 @@ import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class Controller {
+  private[this] val logger = org.log4s.getLogger
+
   private val modules: mutable.Set[IModule] = mutable.HashSet()
 
   private def runProcessHandler(in: Seq[Any], module: IModule): Any = {
@@ -64,7 +66,7 @@ class Controller {
           module.depend.get.foreach(
             dependedModule => {
               while (!promises.contains(dependedModule)) {
-                println(s"Waiting for dependency from ${module.moduleName} to ${module.depend.get}")
+                logger.info(s"Waiting for dependency from ${module.moduleName} to ${module.depend.get}")
                 Thread.sleep(100L)
               }
               val dependency = promises(dependedModule)
@@ -94,16 +96,16 @@ class Controller {
 
     modules.foreach(
       m => {
-        println(s"waiting for future module ${m.moduleName}")
+        logger.info(s"waiting for future module ${m.moduleName}")
 
         while(!futures.contains(m.moduleName)){
-          println(s"waiting for future module ${m.moduleName} be to registered...")
+          logger.info(s"waiting for future module ${m.moduleName} be to registered...")
           Thread.sleep(1000)
         }
 
         val f = futures(m.moduleName)
         Await.ready(f, Duration.Inf)
-        println(s"Completed module ${m.moduleName}")
+        logger.info(s"Completed module ${m.moduleName}")
       }
     )
   }
@@ -115,7 +117,7 @@ class Controller {
   final def register[T <: IModule](module: T): Controller = {
     if(module.getClass.isAnnotationPresent(classOf[moduleDeprecated])){
       val annotation = module.getClass.getAnnotation(classOf[moduleDeprecated])
-      println(s"Skip loading module ${module.moduleName} due to ${annotation.reason()}")
+      logger.info(s"Skip loading module ${module.moduleName} due to ${annotation.reason()}")
     }else{
       modules.add(module)
     }

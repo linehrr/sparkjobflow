@@ -6,8 +6,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 object SparkTests extends App {
-
-
   val controller = new Controller
   controller
       .register(SparkModule1)
@@ -22,14 +20,14 @@ object SparkModule1 extends IModule {
 
   override def depend = None
 
-  var ss: SparkSession =
-          SparkSession.builder()
-            .master("local[4]")
-            .appName("Logic Test")
-            .getOrCreate()
-  var sc: SparkContext = ss.sparkContext
-
   override def process(in: Seq[Any]) = {
+    val ss: SparkSession =
+      SparkSession.builder()
+        .master("local[4]")
+        .appName("Logic Test")
+        .getOrCreate()
+    val sc: SparkContext = ss.sparkContext
+
     val inputData = sc.makeRDD(
       List[String](
         "M1",
@@ -63,5 +61,7 @@ object SparkModule3 extends IModule {
 
   override def process(in: Seq[Any]) = {
     in.head.asInstanceOf[RDD[String]].foreach(println)
+
+    throw new Exception
   }
 }
