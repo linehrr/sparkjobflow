@@ -20,7 +20,7 @@ class Controller {
   }
 
   private final def composeTopology(): Unit = {
-    val futures: mutable.Set[Future[_]] = mutable.HashSet()
+    val futures: mutable.Map[String, Future[_]] = mutable.HashMap()
     val promises: mutable.Map[String, Promise[Any]] = mutable.HashMap()
     val complete: mutable.Map[String, mutable.HashSet[String]] = mutable.HashMap()
     val completedResults: mutable.Map[String, Any] = mutable.HashMap()
@@ -52,7 +52,8 @@ class Controller {
         promises.put(module.moduleName, promise)
 
         if (module.depend.isEmpty) {
-          futures.add(
+          futures.put(
+            module.moduleName,
             Future {
               promise.success(
                 runProcessHandler(null, module)
@@ -75,7 +76,8 @@ class Controller {
 
                     val input = module.depend.get.map(completedResults(_))
 
-                    futures.add(
+                    futures.put(
+                      module.moduleName,
                       Future {
                         promise.success(
                           runProcessHandler(input, module)
@@ -90,8 +92,19 @@ class Controller {
       }
     )
 
-    futures.foreach(
-      f => Await.ready(f, Duration.Inf)
+    modules.foreach(
+      m => {
+        println(s"waiting for future module ${m.moduleName}")
+
+        while(!futures.contains(m.moduleName)){
+          println(s"waiting for future module ${m.moduleName} be to registered...")
+          Thread.sleep(1000)
+        }
+
+        val f = futures(m.moduleName)
+        Await.ready(f, Duration.Inf)
+        println(s"Completed module ${m.moduleName}")
+      }
     )
   }
 
