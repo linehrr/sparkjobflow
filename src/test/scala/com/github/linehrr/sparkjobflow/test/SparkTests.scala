@@ -5,17 +5,21 @@ import com.github.linehrr.sparkjobflow.{Controller, IModule}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.scalatest.FunSuite
 
-object SparkTests extends App {
+class SparkTests extends FunSuite {
   val controller = new Controller
   controller
       .register(SparkModule1)
       .register(SparkModule2)
       .register(SparkModule3)
 
-  controller.start()
+  test("Spark Logic Main test"){
+    controller.start()
+  }
 }
 
+@failFast
 object SparkModule1 extends IModule {
   override def moduleName = "M1"
 
@@ -31,10 +35,7 @@ object SparkModule1 extends IModule {
 
     val inputData = sc.makeRDD(
       List[String](
-        "M1",
-        "M2",
-        "M3",
-        "M4"
+        "M1"
       )
     )
 
@@ -42,26 +43,36 @@ object SparkModule1 extends IModule {
   }
 }
 
-@failFast(exitCode = 9)
+@failFast
 object SparkModule2 extends IModule {
   override def moduleName = "M2"
 
   override def depend = Option(Seq("M1"))
 
   override def process(in: Seq[Any]) = {
-    in.head.asInstanceOf[RDD[String]].foreach(println)
+    assert(in.head.asInstanceOf[RDD[String]]
+      .collect()
+      .head == "M1")
+
     in.head.asInstanceOf[RDD[String]].map( r => r + "M2" )
-    throw new Exception
   }
 }
 
+@failFast
 object SparkModule3 extends IModule {
   override def moduleName = "M3"
 
   override def depend = Option(Seq("M2", "M1"))
 
   override def process(in: Seq[Any]) = {
-    in.head.asInstanceOf[RDD[String]].foreach(println)
-    in(1).asInstanceOf[RDD[String]].map( _ + "M3").collect().foreach(println)
+    assert(in.head.asInstanceOf[RDD[String]]
+      .collect()
+      .head == "M1M2")
+
+    assert(in(1).asInstanceOf[RDD[String]]
+      .map( _ + "M3")
+      .collect()
+      .head == "M1M3"
+    )
   }
 }
