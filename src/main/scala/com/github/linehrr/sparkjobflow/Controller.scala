@@ -1,11 +1,11 @@
 package com.github.linehrr.sparkjobflow
 
-import com.github.linehrr.sparkjobflow.annotation.{failFast, moduleDeprecated}
+import com.github.linehrr.sparkjobflow.annotation.moduleDeprecated
 
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class Controller {
   private[this] val logger = org.log4s.getLogger
@@ -16,7 +16,7 @@ class Controller {
     try {
       module.process(in)
     }catch{
-      case e: Exception =>
+      case e: Throwable =>
         module.on_failure(e, in)
         module.failfast()
     }
