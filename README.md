@@ -162,6 +162,8 @@ public @interface moduleDeprecated {
     String reason() default "Unknown";
 }
 ```
+## Logging
+This project uses log4s logging facade for logging.  Since it's a wrapper for slf4j, therefore all popular solid logging impls are supported.
 
 ## Drawbacks
 This project defines input and output of each module loosly as `Any.type`. this is flexible in a way but more dangerous when talking about RunTimeExceptions. Possible improvement would be making it strongly typed and let compiler to check type correctness for us. this will be future work.
