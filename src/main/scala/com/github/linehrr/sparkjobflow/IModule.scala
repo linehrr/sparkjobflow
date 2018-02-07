@@ -11,7 +11,7 @@ trait IModule {
 
   def process(in: Seq[Any]): Any
 
-  def on_failure(e: Throwable, in: Any): Any = {
+  def on_failure(e: Throwable, in: Seq[Any]): Any = {
     // default failure handling
     logger.error(e)(s"Failed module $moduleName")
 
