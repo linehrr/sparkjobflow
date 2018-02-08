@@ -34,7 +34,7 @@ class Module2 extends IModule {
 }
 ```
 
-## Interfaces
+## Module Interface
 Each module has to extend from IModule trait. there are 3 required methods to implement and a few optional.  
 ```scala
 trait IModule {
@@ -52,6 +52,67 @@ trait IModule {
   // possible InValidCast exception might be thrown if cast improperly.
   def process(in: Seq[Any]): Any
 }
+```
+
+## Statestore Interface
+Statestore is a mechanism to store each module's running/finish/fail states.  
+Below is the interface definition:
+```scala
+  def markRunning(moduleName: String): Unit
+
+  def markFinish(moduleName: String): Unit
+
+  def markFailed(moduleName: String, e: Throwable): Unit
+
+  def closeStatestore(): Unit
+```
+statestore has the same life-cycle as controller. they are instantiated and killed at the same time.  
+`closeStatestore()` will be called right before controller ends its life cycle.  So all the data flushes and connection clean up should be done there.  
+Controller will also use default SimpleStatestore embedded inside if no custom statestore is provided.  It will print out some simple stats about each module in the end:  
+```text
+Module: M1
+Starttime: 1518122157017
+Finishtime: 1518122159833
+Duration: 2816
+**********
+Module: M3
+Starttime: 1518122160367
+Finishtime: 1518122160490
+Duration: 123
+**********
+Module: M2
+Starttime: 1518122159834
+Finishtime: 1518122160367
+Duration: 533
+**********
+```
+otherwise, custom statestore could be injected by using cake-pattern:
+```scala
+trait MyStatestore {
+   private final val db = connect2DB()
+
+   def markRunning(moduleName: String): Unit = {
+      db.markRunning(moduleName)
+   }
+   
+   def markFinish(moduleName: String): Unit = {
+      db.markFinish(moduleName)
+   }
+   
+   def markFailed(moduleName: String, e: Throwable): Unit = {
+      db.markFailed(moduleName, e.getMessage)
+   }
+   
+   def closeStatestore(): Unit = {
+      db.close()
+   }
+}
+
+object myApp extends App {
+   val controller = new Controller with MyStatestore
+     ...
+}
+
 ```
 
 ## On failure callbacks

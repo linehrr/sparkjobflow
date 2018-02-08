@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 trait SimpleStatestore extends IStatestore {
 
-  private val simpleStats: mutable.Map[String, ModuleStatus] = mutable.HashMap[String, ModuleStatus]()
+  private final val simpleStats: mutable.Map[String, ModuleStatus] = mutable.HashMap[String, ModuleStatus]()
 
   override def markRunning(moduleName: String): Unit = {
     if(!simpleStats.contains(moduleName)) simpleStats(moduleName) = ModuleStatus()
