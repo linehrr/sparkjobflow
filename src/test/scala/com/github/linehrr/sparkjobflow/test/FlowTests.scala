@@ -30,6 +30,7 @@ object Module1 extends IModule {
   override def depend = None
 
   override def process(in: Seq[Any]) = {
+    Thread.sleep(20)
     "M1"
   }
 }

@@ -1,22 +1,29 @@
 package com.github.linehrr.sparkjobflow
 
 import com.github.linehrr.sparkjobflow.annotation.moduleDeprecated
+import com.github.linehrr.sparkjobflow.stats.{IStatestore, SimpleStatestore}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, Promise}
 
-class Controller {
+class Controller extends SimpleStatestore {
+  self: IStatestore =>
   private[this] val logger = org.log4s.getLogger
 
   private val modules: mutable.Set[IModule] = mutable.HashSet()
 
   private def runProcessHandler(in: Seq[Any], module: IModule): Any = {
     try {
-      module.process(in)
+      self.markRunning(module.moduleName)
+      val res = module.process(in)
+      self.markFinish(module.moduleName)
+
+      res
     }catch{
       case e: Throwable =>
+        self.markFailed(module.moduleName, e)
         module.on_failure(e, in)
         module.failfast()
     }
@@ -109,6 +116,8 @@ class Controller {
         logger.info(s"Completed module ${m.moduleName}")
       }
     )
+
+    self.closeStatestore()
   }
 
   final def start(): Unit = {
