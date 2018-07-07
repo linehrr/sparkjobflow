@@ -88,7 +88,7 @@ Duration: 533
 ```
 otherwise, custom statestore could be injected by using cake-pattern:
 ```scala
-trait MyStatestore {
+trait MyStatestore extends IStateStore {
    private final val db = connect2DB()
 
    def markRunning(moduleName: String): Unit = {
